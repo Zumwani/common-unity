@@ -34,9 +34,9 @@ namespace Common
 
         }
 
-        public static void CancelCoroutine(Coroutine coroutine)
+        public static void StopCoroutine(Coroutine coroutine)
         {
-            if (coroutines.TryGetValue(coroutine, out var runner))
+            if (coroutine != null && coroutines.TryGetValue(coroutine, out var runner))
                 Object.Destroy(runner);
         }
 
