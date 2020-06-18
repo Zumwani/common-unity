@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -10,9 +11,8 @@ namespace Common
     public static class TaskUtility
     {
 
-        public static ObjectAwaiter GetAwaiter(this Object obj)                                     => new ObjectAwaiter(obj);
-        public static CoroutineAwaiter GetAwaiter(this IEnumerator coroutine)                       => new CoroutineAwaiter(coroutine);
-        public static YieldInstructionAwaiter GetAwaiter(this YieldInstruction yieldInstruction)    => new YieldInstructionAwaiter(yieldInstruction);
+        public static ObjectAwaiter GetAwaiter(this Object obj) => new ObjectAwaiter(obj);
+        public static CoroutineAwaiter GetAwaiter(this IEnumerator coroutine) => new CoroutineAwaiter(coroutine);
 
         public struct ObjectAwaiter : INotifyCompletion
         {
@@ -34,50 +34,43 @@ namespace Common
         public struct CoroutineAwaiter : INotifyCompletion
         {
 
-            private bool IsDone { get; set; }
+            static readonly List<IEnumerator> completed = new List<IEnumerator>();
+            readonly IEnumerator coroutine;
 
             public CoroutineAwaiter(IEnumerator coroutine) : this()
             {
-                var obj = new GameObject("Coroutine Runner");
-                obj.AddComponent<MonoBehaviour>().StartCoroutine(Coroutine(coroutine));
+
+                this.coroutine = coroutine;
+                Run().StartCoroutine();
+
+                IEnumerator Run()
+                {
+                    yield return coroutine;
+                    completed.Add(coroutine);
+                    continuation?.Invoke();
+                }
+
             }
 
-            IEnumerator Coroutine(IEnumerator coroutine)
+            public bool IsCompleted
             {
-                yield return coroutine;
-                IsDone = true;
+                get
+                {
+                    if (completed.Contains(coroutine))
+                    {
+                        completed.Remove(coroutine);
+                        return true;
+                    }
+                    return false;
+                }
             }
 
-            public bool IsCompleted => IsDone;
+            Action action;
 
-            public void OnCompleted(Action continuation) =>
-                continuation?.Invoke();
-
-            public void GetResult() { }
-
-        }
-
-        public struct YieldInstructionAwaiter : INotifyCompletion
-        {
-
-            private bool IsDone { get; set; }
-
-            public YieldInstructionAwaiter(YieldInstruction yieldInstruction) : this()
+            public void OnCompleted(Action continuation)
             {
-                var obj = new GameObject("Coroutine Runner");
-                obj.AddComponent<MonoBehaviour>().StartCoroutine(Coroutine(yieldInstruction));
+                action = continuation;
             }
-
-            IEnumerator Coroutine(YieldInstruction yieldInstruction)
-            {
-                yield return yieldInstruction;
-                IsDone = true;
-            }
-
-            public bool IsCompleted => IsDone;
-
-            public void OnCompleted(Action continuation) =>
-                continuation?.Invoke();
 
             public void GetResult() { }
 

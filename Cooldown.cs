@@ -15,7 +15,9 @@ namespace Common
         float? nextTrigger;
         public float? duration;
 
+#pragma warning disable CS0649
         [SerializeField] float m_duration;
+#pragma warning restore CS0649
 
         public bool CanTrigger() =>
             Update();
