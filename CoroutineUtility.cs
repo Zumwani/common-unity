@@ -1,6 +1,8 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System;
+using Object = UnityEngine.Object;
 
 namespace Common
 {
@@ -10,7 +12,7 @@ namespace Common
 
         static readonly Dictionary<Coroutine, CoroutineHelper> coroutines = new Dictionary<Coroutine, CoroutineHelper>();
 
-        public static Coroutine StartCoroutine(this IEnumerator coroutine)
+        public static Coroutine StartCoroutine(this IEnumerator coroutine, Action onComplete = null)
         {
 
             var obj = new GameObject("Coroutine Runner");
@@ -27,6 +29,7 @@ namespace Common
                 yield return coroutine;
                 coroutines.Remove(c);
                 Object.Destroy(obj);
+                onComplete?.Invoke();
             }
 
         }

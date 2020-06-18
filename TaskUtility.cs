@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -24,8 +26,12 @@ namespace Common
 
             public bool IsCompleted => obj;
 
-            public void OnCompleted(Action continuation) =>
+            public async void OnCompleted(Action continuation)
+            {
+                while (!IsCompleted)
+                    await Task.Yield();
                 continuation?.Invoke();
+            }
 
             public void GetResult() { }
 
@@ -49,7 +55,6 @@ namespace Common
             {
                 yield return coroutine;
                 completed.Add(coroutine);
-                action?.Invoke();
             }
 
             public bool IsCompleted
@@ -65,11 +70,11 @@ namespace Common
                 }
             }
 
-            Action action;
-
-            public void OnCompleted(Action continuation)
+            public async void OnCompleted(Action continuation)
             {
-                action = continuation;
+                while (!completed.Contains(coroutine))
+                    await Task.Yield();
+                continuation?.Invoke();
             }
 
             public void GetResult() { }
