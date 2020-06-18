@@ -1,7 +1,8 @@
 {
     "name": "Common.Unity",
     "references": [
-        "GUID:a12776fa15cfcc340bf333c5024e4c18"
+        "GUID:a12776fa15cfcc340bf333c5024e4c18",
+        "GUID:40a094b058cc026489d2e6f678b1032f"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
