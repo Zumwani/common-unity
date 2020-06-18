@@ -43,13 +43,13 @@ namespace Common
                 this.coroutine = coroutine;
                 Run().StartCoroutine();
 
-                IEnumerator Run()
-                {
-                    yield return coroutine;
-                    completed.Add(coroutine);
-                    continuation?.Invoke();
-                }
+            }
 
+            IEnumerator Run()
+            {
+                yield return coroutine;
+                completed.Add(coroutine);
+                action?.Invoke();
             }
 
             public bool IsCompleted
