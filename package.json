@@ -1,9 +1,8 @@
 {
   "name": "common.unity",
-  "version": "1.0.0",
   "displayName": "Common Unity Utilities",
-  "description": "",
-  "keywords": [],
+  "version": "1.0.0",
+  "description": "Provides some commonly useful utilities.",
   "author": {
     "name": "Zumwani"
   }
