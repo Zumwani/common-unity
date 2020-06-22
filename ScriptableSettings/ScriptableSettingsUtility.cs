@@ -79,8 +79,6 @@ namespace Common
 
             }
 
-            AssetDatabase.Refresh();
-
         }
 
         public static void OpenInEditor(string path)
