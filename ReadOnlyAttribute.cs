@@ -4,7 +4,7 @@
 using UnityEditor;
 
 [CustomPropertyDrawer(typeof(ReadOnlyAttribute))]
-public class ReadOnlyPropertyDrawer : PropertyDrawer<ReadOnlyAttribute>
+public class ReadOnlyPropertyDrawer : PropertyDrawer
 {
 
     public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)

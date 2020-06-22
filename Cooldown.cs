@@ -1,4 +1,6 @@
-﻿using System;
+﻿#pragma warning disable CS0649
+
+using System;
 using UnityEngine;
 
 namespace Common
@@ -8,16 +10,28 @@ namespace Common
     public class Cooldown
     {
 
-        public bool resetAutomatically = true;
-        public bool startAutomatically = true;
-        [ReadOnly] public float time;
+        public enum Mode
+        {
+            Manual, ResetAutomatically, StartAutomatically, Auto
+        }
+
+        public Mode mode = Mode.Auto;
+        public bool ResetAutomatically => mode == Mode.Auto || mode == Mode.ResetAutomatically;
+        public bool StartAutomatically => mode == Mode.Auto || mode == Mode.StartAutomatically;
+
+        [Label] public float time;
 
         float? nextTrigger;
         public float? duration;
 
-#pragma warning disable CS0649
         [SerializeField] float m_duration;
-#pragma warning restore CS0649
+
+        bool isStarted;
+
+        public void Start()
+        {
+            isStarted = true;
+        }
 
         public bool CanTrigger() =>
             Update();
@@ -26,17 +40,24 @@ namespace Common
         public bool Update()
         {
 
+            if (!isStarted)
+            {
+                if (StartAutomatically)
+                    Start();
+                return false;
+            }
+
             if (m_duration > 0)
                 duration = m_duration;
 
             if (!duration.HasValue)
                 return false;
 
-            if (!nextTrigger.HasValue && startAutomatically)
+            if (!nextTrigger.HasValue)
                 Reset();
 
             if (nextTrigger > 0)
-                nextTrigger -= Time.deltaTime;
+                nextTrigger = Mathf.Clamp(nextTrigger.Value - Time.deltaTime, 0, duration.Value);
 
             if (nextTrigger > 0)
             {
@@ -58,7 +79,7 @@ namespace Common
 
         void ResetAuto()
         {
-            if (resetAutomatically)
+            if (ResetAutomatically)
                 Reset();
         }
 

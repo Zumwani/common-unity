@@ -49,7 +49,7 @@ public class RequiredAttribute : AutoAttribute
 #if UNITY_EDITOR
 [CustomPropertyDrawer(typeof(AutoAttribute))]
 [CustomPropertyDrawer(typeof(RequiredAttribute))]
-public class AutoDrawer : PropertyDrawer<AutoAttribute>
+public class AutoDrawer : PropertyDrawer
 {
 
     static readonly GUIStyle redStyle = new GUIStyle() { normal = new GUIStyleState() { textColor = Color.red } };
@@ -60,6 +60,8 @@ public class AutoDrawer : PropertyDrawer<AutoAttribute>
     void OnUndo() => IsUndo = true;
     public AutoDrawer() => Undo.undoRedoPerformed += OnUndo;
     ~AutoDrawer()       => Undo.undoRedoPerformed -= OnUndo;
+
+    public new AutoAttribute attribute => (AutoAttribute)base.attribute;
 
     public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
     {

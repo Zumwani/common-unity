@@ -10,7 +10,7 @@ public class HiddenAttribute : PropertyAttribute
 
 #if UNITY_EDITOR
 [CustomPropertyDrawer(typeof(HiddenAttribute))]
-public class HiddenPropertyDrawer : PropertyDrawer<HiddenAttribute>
+public class HiddenPropertyDrawer : PropertyDrawer
 {
 
     public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)

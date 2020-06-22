@@ -32,8 +32,10 @@ public class ShowIfAttribute : PropertyAttribute
 
 #if UNITY_EDITOR
 [CustomPropertyDrawer(typeof(ShowIfAttribute), false)]
-public class ShowIfPropertyDrawer : PropertyDrawer<ShowIfAttribute>
+public class ShowIfPropertyDrawer : PropertyDrawer
 {
+
+    public new ShowIfAttribute attribute => (ShowIfAttribute)base.attribute;
 
     const BindingFlags bindingFlags =
         BindingFlags.Public | BindingFlags.NonPublic |

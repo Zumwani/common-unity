@@ -24,8 +24,10 @@ public class ButtonAttribute : PropertyAttribute
 
 #if UNITY_EDITOR
 [CustomPropertyDrawer(typeof(ButtonAttribute))]
-public class ButtonDrawer : PropertyDrawer<ButtonAttribute>
+public class ButtonDrawer : PropertyDrawer
 {
+
+    public new ButtonAttribute attribute => (ButtonAttribute)base.attribute;
 
     const BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
 

@@ -23,7 +23,7 @@ public class FilePickerAttribute : FolderPickerAttribute
 
 [CustomPropertyDrawer(typeof(FilePickerAttribute))]
 [CustomPropertyDrawer(typeof(FolderPickerAttribute))]
-public class FilePickerPropertyDrawer : PropertyDrawer<FolderPickerAttribute>
+public class FilePickerPropertyDrawer : PropertyDrawer
 {
 
     static readonly GUIContent file = new GUIContent("...", "Open file...");
