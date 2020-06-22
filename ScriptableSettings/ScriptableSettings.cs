@@ -1,14 +1,33 @@
 ﻿using UnityEngine;
-using System.Linq;
-
-namespace Common
-{
 
 #if UNITY_EDITOR
     using UnityEditor;
 #endif
 
-    public abstract class ScriptableSettings<T> : ScriptableObject, ScriptableSettingsUtility.IScriptableSettings where T : ScriptableObject
+namespace Common
+{
+
+    public abstract class ScriptableSettingsBase : ScriptableObject
+    {
+
+#if UNITY_EDITOR
+
+        [CustomEditor(typeof(ScriptableSettingsBase), true, isFallback = true)]
+        public class Editor : UnityEditor.Editor
+        {
+
+            public override void OnInspectorGUI()
+            {
+                DrawPropertiesExcluding(serializedObject, "m_Script");
+            }
+
+        }
+
+#endif
+
+    }
+
+    public abstract class ScriptableSettings<T> : ScriptableSettingsBase where T : ScriptableObject
     {
 
         public static T Current => GetSettings();
@@ -30,12 +49,6 @@ namespace Common
             AssetDatabase.DeleteAsset("Assets/Settings/Resources/Settings/" + typeof(T).Name + ".asset");
             AssetDatabase.CreateAsset(obj, "Assets/Settings/Resources/Settings/" + typeof(T).Name + ".asset");
 
-            var proxy = CreateInstance<ScriptableSettingsProxy>();
-            proxy.target = obj;
-
-            AssetDatabase.DeleteAsset("Assets/Settings/" + typeof(T).Name + ".asset");
-            AssetDatabase.CreateAsset(proxy, "Assets/Settings/" + typeof(T).Name + ".asset");
-
             return obj;
 
 #else
@@ -47,16 +60,6 @@ namespace Common
         public static void EnsureExists()
         {
             GetSettings();
-        }
-
-        public static void OpenInEditor()
-        {
-#if UNITY_EDITOR
-            EnsureExists();
-            var asset = AssetDatabase.LoadAssetAtPath<ScriptableSettingsProxy>("Assets/Settings/" + typeof(T).Name + ".asset");
-            if (asset)
-                Selection.activeObject = asset;
-#endif
         }
 
     }

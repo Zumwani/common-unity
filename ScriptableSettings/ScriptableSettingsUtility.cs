@@ -1,12 +1,14 @@
 ﻿#pragma warning disable IDE0063 // Use simple 'using' statement
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 
 #if UNITY_EDITOR
 using UnityEditor;
+using UnityEngine;
 
 namespace Common
 {
@@ -14,14 +16,11 @@ namespace Common
     public static class ScriptableSettingsUtility
     {
 
-        public interface IScriptableSettings
-        { }
-
         [InitializeOnLoadMethod]
         public static void EnsureObjectsCreated()
         {
 
-            var types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.ExportedTypes).Where(t => typeof(IScriptableSettings).IsAssignableFrom(t) && !t.IsAbstract).ToArray();
+            var types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.ExportedTypes).Where(t => typeof(ScriptableSettingsBase).IsAssignableFrom(t) && !t.IsAbstract).ToArray();
             foreach (var t in types)
             {
                 var method = typeof(ScriptableSettings<>).MakeGenericType(t).GetMethod("EnsureExists", BindingFlags.Public | BindingFlags.Static | BindingFlags.InvokeMethod);
@@ -36,7 +35,7 @@ namespace Common
         {
 
             var types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.ExportedTypes).
-                Where(t => typeof(IScriptableSettings).IsAssignableFrom(t) && !t.IsAbstract).
+                Where(t => typeof(ScriptableSettingsBase).IsAssignableFrom(t) && !t.IsAbstract).
                 Select(t => (type: t, name: t.Name.Replace("Settings", ""))).
                 ToArray();
 
@@ -65,7 +64,7 @@ namespace Common
 
                     writer.WriteLine("");
                     writer.WriteLine($@"        [MenuItem(""Settings/{name}"")]");
-                    writer.WriteLine($@"        public static void Item{i}() => ScriptableSettingsUtility.OpenInEditor(""Assets/Settings/{type.Name}.asset"");");
+                    writer.WriteLine($@"        public static void Item{i}() => ScriptableSettingsUtility.OpenInEditor(""Assets/Settings/Resources/Settings/{type.Name}.asset"");");
 
                     i += 1;
 
@@ -83,9 +82,39 @@ namespace Common
 
         public static void OpenInEditor(string path)
         {
-            var asset = AssetDatabase.LoadAssetAtPath<ScriptableSettingsProxy>(path);
+
+            var asset = AssetDatabase.LoadAssetAtPath<ScriptableSettingsBase>(path);
             if (asset)
-                Selection.activeObject = asset;
+            {
+
+                var window = EditorWindow.GetWindow<Window>(asset.name.Replace("Settings", ""));
+                window.titleContent = new GUIContent(asset.name.Replace("Settings", ""));
+                window.target = asset;
+
+                window.Show();
+                
+            }
+
+        }
+
+        class Window : EditorWindow
+        {
+
+            public ScriptableObject target;
+
+            Editor editor;
+
+            private void OnGUI()
+            {
+
+                if (!editor)
+                    editor = Editor.CreateEditor(target);
+
+                editor.DrawHeader();
+                editor.OnInspectorGUI();
+                
+            }
+
         }
 
     }
