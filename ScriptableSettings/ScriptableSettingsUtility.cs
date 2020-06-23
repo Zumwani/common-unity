@@ -8,6 +8,7 @@ using System.Reflection;
 
 #if UNITY_EDITOR
 using UnityEditor;
+using UnityEditor.MemoryProfiler;
 using UnityEngine;
 
 namespace Common
@@ -40,8 +41,15 @@ namespace Common
                 Select(t => (type: t, name: t.Name.Replace("Settings", ""))).
                 ToArray();
 
-            EditorFolderUtility.EnsureFolderExists("Assets/Settings");
             var path = "Assets/Settings/MenuItems.cs";
+            if (!types.Any())
+            {
+                if (AssetDatabase.LoadAssetAtPath<MonoScript>(path) is MonoScript script)
+                    AssetDatabase.DeleteAsset(path);
+                return;
+            }
+
+            EditorFolderUtility.EnsureFolderExists("Assets/Settings");
 
             using (var writer = new StreamWriter(path))
             {
