@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using System;
-using Common;
 
 #if UNITY_EDITOR
 using UnityEditor;

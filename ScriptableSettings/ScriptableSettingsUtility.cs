@@ -1,7 +1,7 @@
 ﻿#pragma warning disable IDE0063 // Use simple 'using' statement
+#pragma warning disable IDE0051 // Remove unused private members
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -17,7 +17,7 @@ namespace Common
     {
 
         [InitializeOnLoadMethod]
-        public static void EnsureObjectsCreated()
+        static void EnsureObjectsCreated()
         {
 
             var types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.ExportedTypes).Where(t => typeof(ScriptableSettingsBase).IsAssignableFrom(t) && !t.IsAbstract).ToArray();
@@ -31,9 +31,9 @@ namespace Common
 
         }
 
-        public static void CreateMenuItems()
+        static void CreateMenuItems()
         {
-
+             
             var types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.ExportedTypes).
                 Where(t => typeof(ScriptableSettingsBase).IsAssignableFrom(t) && !t.IsAbstract).
                 Select(t => (type: t, name: t.Name.Replace("Settings", ""))).
@@ -78,8 +78,11 @@ namespace Common
 
             }
 
+            AssetDatabase.Refresh();
+
         }
 
+        /// <summary>Opens the ScriptableSettings in an editor window.</summary>
         public static void OpenInEditor(string path)
         {
 

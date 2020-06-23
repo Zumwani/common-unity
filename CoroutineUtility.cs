@@ -6,8 +6,10 @@ using System.Collections;
 using System;
 using Object = UnityEngine.Object;
 using System.Collections.Generic;
+
+#if UNITY_EDITOR
 using UnityEditor;
-using System.Threading.Tasks;
+#endif
 
 namespace Common
 {
@@ -35,13 +37,104 @@ namespace Common
             return c;
 
         }
-           
-        [UnityEditor.Callbacks.DidReloadScripts]
-        static void OnScriptsReloaded()
+
+        /// <summary>Stops the coroutine.</summary>
+        public static void StopCoroutine(Coroutine coroutine) =>
+            coroutine.Stop();
+
+        /// <summary>Stops all coroutines in the scene.</summary>
+        public static void StopAllCoroutines()
         {
             var obj = Object.FindObjectsOfType<CoroutineRoot>();
             foreach (var o in obj)
                 Object.DestroyImmediate(o.gameObject);
+        }
+
+#if UNITY_EDITOR
+        [UnityEditor.Callbacks.DidReloadScripts]
+        static void OnScriptsReloaded()
+        {
+            //Coroutines stop when script and editor state changes, which means that we'll have rogue CoroutineHelper objects in the scene, 
+            //so let's remove them
+            StopAllCoroutines();
+        }
+#endif
+
+#region Single Instance
+
+        static readonly Dictionary<string, Coroutine> coroutines = new Dictionary<string, Coroutine>();
+        /// <summary>Starts this coroutine. This method can only start a single instance of this coroutine.</summary>
+        public static void Start(this IEnumerator coroutine)
+        {
+            if (coroutine == null)
+                return;
+            if (!coroutines.ContainsKey(coroutine.ToString()))
+                coroutines.Add(coroutine.ToString(), StartCoroutine(coroutine));
+        }
+
+        /// <summary>Restarts this coroutine.</summary>
+        public static void Restart(this IEnumerator coroutine)
+        {
+            coroutine.Stop();
+            coroutine.Start();
+        }
+
+        /// <summary>Stops this coroutine.</summary>
+        public static void Stop(this IEnumerator coroutine) => coroutine?.GetActive()?.Stop();
+
+        /// <summary>Pauses this coroutine.</summary>
+        public static void Pause(this IEnumerator coroutine) => coroutine?.GetActive()?.Pause();
+
+        /// <summary>Resumes this coroutine, if paused.</summary>
+        public static void Resume(this IEnumerator coroutine) => coroutine?.GetActive()?.Resume();
+
+        /// <summary>Gets if this coroutine is currently running. Use IsPaused to check if the coroutine is paused.</summary>
+        public static bool IsRunning(this IEnumerator coroutine) => coroutine?.GetActive()?.IsRunning ?? false;
+
+        /// <summary>Gets if this coroutine is currently paused.</summary>
+        public static bool IsPaused(this IEnumerator coroutine) => coroutine?.GetActive() is Coroutine c && c.IsPaused && c.IsRunning;
+
+        /// <summary>Gets the currently active instance that was started from Start.</summary>
+        public static Coroutine GetActive(this IEnumerator coroutine)
+        {
+            if (coroutines.TryGetValue(coroutine?.ToString(), out var c))
+                return c;
+            else
+                return null;
+        }
+
+#endregion
+
+        public class Coroutine
+        {
+
+            public Coroutine(IEnumerator coroutine, CoroutineHelper helper, Action onComplete)
+            {
+                this.helper = helper;
+                this.coroutine = coroutine;
+                OnComplete = onComplete;
+            }
+
+            readonly IEnumerator coroutine;
+            readonly CoroutineHelper helper;
+
+            public Action OnComplete { get; private set; }
+            public bool IsPaused { get; private set; }
+            public bool IsRunning => helper;
+
+            public void Pause() => IsPaused = true;
+            public void Resume() => IsPaused = false;
+            public void Stop()
+            {
+                OnComplete?.Invoke();
+                coroutines.Remove(coroutine.ToString());
+                root.DestroyIfEmpty();
+                if (Application.isPlaying)
+                    Object.Destroy(helper.gameObject);
+                else
+                    Object.DestroyImmediate(helper.gameObject);
+            }
+
         }
 
         [ExecuteAlways]
@@ -92,79 +185,6 @@ namespace Common
 
         }
 
-        static readonly Dictionary<string, Coroutine> coroutines = new Dictionary<string, Coroutine>();
-        /// <summary>Starts this coroutine. This method can only start a single instance of this coroutine.</summary>
-        public static void Start(this IEnumerator coroutine)
-        {
-            if (coroutine == null)
-                return;
-            if (!coroutines.ContainsKey(coroutine.ToString()))
-                coroutines.Add(coroutine.ToString(), StartCoroutine(coroutine));
-        }
-
-        /// <summary>Restarts this coroutine.</summary>
-        public static void Restart(this IEnumerator coroutine)
-        {
-            coroutine.Stop();
-            coroutine.Start();
-        }
-
-        /// <summary>Stops this coroutine.</summary>
-        public static void Stop(this IEnumerator coroutine) => coroutine?.GetActive()?.Stop();
-
-        /// <summary>Pauses this coroutine.</summary>
-        public static void Pause(this IEnumerator coroutine) => coroutine?.GetActive()?.Pause();
-
-        /// <summary>Resumes this coroutine, if paused.</summary>
-        public static void Resume(this IEnumerator coroutine) => coroutine?.GetActive()?.Resume();
-
-        /// <summary>Gets if this coroutine is currently running. Use IsPaused to check if the coroutine is paused.</summary>
-        public static bool IsRunning(this IEnumerator coroutine) => coroutine?.GetActive()?.IsRunning ?? false;
-
-        /// <summary>Gets if this coroutine is currently paused.</summary>
-        public static bool IsPaused(this IEnumerator coroutine) => coroutine?.GetActive() is Coroutine c && c.IsPaused && c.IsRunning;
-
-        /// <summary>Gets the currently active instance that was started from Start.</summary>
-        public static Coroutine GetActive(this IEnumerator coroutine)
-        {
-            if (coroutines.TryGetValue(coroutine?.ToString(), out var c))
-                return c;
-            else
-                return null;
-        }
-
-        public class Coroutine
-        {
-
-            public Coroutine(IEnumerator coroutine, CoroutineHelper helper, Action onComplete)
-            {
-                this.helper = helper;
-                this.coroutine = coroutine;
-                OnComplete = onComplete;
-            }
-
-            readonly IEnumerator coroutine;
-            readonly CoroutineHelper helper;
-
-            public Action OnComplete { get; private set; }
-            public bool IsPaused { get; private set; }
-            public bool IsRunning => helper;
-
-            public void Pause() => IsPaused = true;
-            public void Resume() => IsPaused = false;
-            public void Stop()
-            {
-                OnComplete?.Invoke();
-                coroutines.Remove(coroutine.ToString());
-                root.DestroyIfEmpty();
-                if (Application.isPlaying)
-                    Object.Destroy(helper.gameObject);
-                else
-                    Object.DestroyImmediate(helper.gameObject);
-            }
-
-        }
-          
         [ExecuteAlways]
         public class CoroutineHelper : MonoBehaviour
         {

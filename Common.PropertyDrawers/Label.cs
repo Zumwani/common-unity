@@ -1,6 +1,4 @@
 ﻿using UnityEngine;
-using System.Reflection;
-using Common;
 
 #if UNITY_EDITOR
 using UnityEditor;

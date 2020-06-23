@@ -13,15 +13,15 @@ namespace Common
         public static void EnsureFolderExists(string folder)
         {
 
-            if (folder.StartsWith("Assets/"))
-                folder = folder.Substring("Assets/".Length);
+            if (!folder.StartsWith("Assets/"))
+                folder = "Assets/" + folder;
 
             var segments = folder.Split('/');
             var path = segments.FirstOrDefault();
             bool isFirst = true;
             foreach (var f in segments)
             {
-                if (!AssetDatabase.IsValidFolder(path + "/" + f))
+                if (f != "Assets" && !AssetDatabase.IsValidFolder(path + "/" + f))
                     AssetDatabase.CreateFolder(path, f);
                 if (!isFirst)
                     path += "/" + f;

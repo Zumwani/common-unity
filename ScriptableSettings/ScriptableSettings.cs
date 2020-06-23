@@ -27,9 +27,11 @@ namespace Common
 
     }
 
-    public abstract class ScriptableSettings<T> : ScriptableSettingsBase where T : ScriptableObject
+    /// <summary>A base class for creating ScriptableSettings. ScriptableSettings are automatically created and are accessible through <YourScriptableSettings>.Current or through 'Settings > YourScriptableSettings' menu item.</summary>
+    public abstract class ScriptableSettings<T> : ScriptableSettingsBase where T : ScriptableSettings<T>
     {
 
+        /// <summary>Gets the current <see cref="T"/>.</summary>
         public static T Current => GetSettings();
 
         static T GetSettings()
@@ -40,6 +42,13 @@ namespace Common
                 return resource is T settings
                     ? settings
                     : null;
+
+            return Create();
+
+        }
+
+        static T Create()
+        {
 
 #if UNITY_EDITOR
 
@@ -57,10 +66,9 @@ namespace Common
 
         }
 
-        public static void EnsureExists()
-        {
+        /// <summary>Ensures that the ScriptableSettings has been created.</summary>
+        public static void EnsureExists() =>
             GetSettings();
-        }
 
     }
 

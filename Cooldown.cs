@@ -6,6 +6,7 @@ using UnityEngine;
 namespace Common
 {
 
+    /// <summary>A class that manages cooldowns.</summary>
     [Serializable]
     public class Cooldown
     {
@@ -26,32 +27,47 @@ namespace Common
 
         [SerializeField] float m_duration;
 
-        bool isStarted;
+        bool canStart;
+        bool hasStarted;
 
-        public void Start()
+        int lastFrameCount;
+        bool isTriggered;
+
+        /// <summary>Starts this cooldown.</summary>
+        public void Start() =>
+            canStart = true;
+
+        /// <summary>Updates and returns whatever this cooldown is triggered or not.</summary>
+        public bool IsTriggered()
         {
-            isStarted = true;
+            Update();
+            return isTriggered;
         }
 
-        public bool CanTrigger() =>
-            Update();
-
-        bool hasStarted;
-        public bool Update()
+        /// <summary>Updates this cooldown, this or IsTriggered must be called every frame.</summary>
+        public void Update()
         {
 
-            if (!isStarted)
+            if (lastFrameCount == Time.frameCount)
+                return;
+            lastFrameCount = Time.frameCount;
+
+            if (!canStart)
             {
                 if (StartAutomatically)
                     Start();
-                return false;
+                isTriggered = false;
+                return;
             }
 
             if (m_duration > 0)
                 duration = m_duration;
 
             if (!duration.HasValue)
-                return false;
+            {
+                isTriggered = false;
+                return;
+            }
 
             if (!nextTrigger.HasValue)
                 Reset();
@@ -63,17 +79,19 @@ namespace Common
             {
                 hasStarted = true;
                 time = nextTrigger.Value;
-                return false;
+                isTriggered = false;
+                return;
             }
             else if (hasStarted)
             {
                 ResetAuto();
                 time = nextTrigger.Value;
                 hasStarted = false;
-                return true;
+                isTriggered = true;
+                return;
             }
 
-            return false;
+            isTriggered = false;
 
         }
 
@@ -83,6 +101,7 @@ namespace Common
                 Reset();
         }
 
+        /// <summary>Resets this cooldown.</summary>
         public void Reset() =>
             nextTrigger = duration ?? 1f;
 
