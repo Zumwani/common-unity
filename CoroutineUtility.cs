@@ -40,7 +40,7 @@ namespace Common
 
         /// <summary>Stops the coroutine.</summary>
         public static void StopCoroutine(Coroutine coroutine) =>
-            coroutine.Stop();
+            coroutine?.Stop();
 
         /// <summary>Stops all coroutines in the scene.</summary>
         public static void StopAllCoroutines()
@@ -128,7 +128,8 @@ namespace Common
             {
                 OnComplete?.Invoke();
                 coroutines.Remove(coroutine.ToString());
-                root.DestroyIfEmpty();
+                if (root)
+                    root.DestroyIfEmpty();
                 if (helper)
                     if (Application.isPlaying)
                         Object.Destroy(helper.gameObject);
