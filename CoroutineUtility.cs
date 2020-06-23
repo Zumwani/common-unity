@@ -159,8 +159,11 @@ namespace Common
 
 #endif
 
-            public void DestroyIfEmpty() =>
-                StartCoroutine(WaitAndDestroy(gameObject));
+            public void DestroyIfEmpty()
+            {
+                if (gameObject)
+                    StartCoroutine(WaitAndDestroy(gameObject));
+            }
                 
             public void Destroy(CoroutineHelper coroutine)
             {
