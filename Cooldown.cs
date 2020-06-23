@@ -16,6 +16,8 @@ namespace Common
             Manual, ResetAutomatically, StartAutomatically, Auto
         }
 
+        [HideInInspector] public bool useFixedDeltaTime;
+
         public Mode mode = Mode.Auto;
         public bool ResetAutomatically => mode == Mode.Auto || mode == Mode.ResetAutomatically;
         public bool StartAutomatically => mode == Mode.Auto || mode == Mode.StartAutomatically;
@@ -73,7 +75,7 @@ namespace Common
                 Reset();
 
             if (nextTrigger > 0)
-                nextTrigger = Mathf.Clamp(nextTrigger.Value - Time.deltaTime, 0, duration.Value);
+                nextTrigger = Mathf.Clamp(nextTrigger.Value - (useFixedDeltaTime ? Time.fixedDeltaTime : Time.deltaTime), 0, duration.Value);
 
             if (nextTrigger > 0)
             {
