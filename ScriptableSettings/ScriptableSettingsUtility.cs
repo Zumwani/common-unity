@@ -28,6 +28,7 @@ namespace Common
             }
 
             CreateMenuItems();
+            AssetDatabase.Refresh();
 
         }
 
@@ -77,8 +78,6 @@ namespace Common
                 writer.WriteLine("#endif");
 
             }
-
-            AssetDatabase.Refresh();
 
         }
 
