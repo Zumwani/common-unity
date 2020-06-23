@@ -129,10 +129,11 @@ namespace Common
                 OnComplete?.Invoke();
                 coroutines.Remove(coroutine.ToString());
                 root.DestroyIfEmpty();
-                if (Application.isPlaying)
-                    Object.Destroy(helper.gameObject);
-                else
-                    Object.DestroyImmediate(helper.gameObject);
+                if (helper.gameObject)
+                    if (Application.isPlaying)
+                        Object.Destroy(helper.gameObject);
+                    else
+                        Object.DestroyImmediate(helper.gameObject);
             }
 
         }
