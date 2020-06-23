@@ -129,7 +129,7 @@ namespace Common
                 OnComplete?.Invoke();
                 coroutines.Remove(coroutine.ToString());
                 root.DestroyIfEmpty();
-                if (helper.gameObject)
+                if (helper)
                     if (Application.isPlaying)
                         Object.Destroy(helper.gameObject);
                     else
