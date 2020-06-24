@@ -25,9 +25,7 @@ namespace Common
         [Label] public float time;
 
         float? nextTrigger;
-        public float? duration;
-
-        [SerializeField] float m_duration;
+        public float duration;
 
         bool canStart;
         bool hasStarted;
@@ -50,6 +48,12 @@ namespace Common
         public void Update()
         {
 
+            if (duration <= 0)
+            {
+                isTriggered = true;
+                return;
+            }
+
             if (lastFrameCount == Time.frameCount)
                 return;
             lastFrameCount = Time.frameCount;
@@ -62,20 +66,11 @@ namespace Common
                 return;
             }
 
-            if (m_duration > 0)
-                duration = m_duration;
-
-            if (!duration.HasValue)
-            {
-                isTriggered = false;
-                return;
-            }
-
             if (!nextTrigger.HasValue)
                 Reset();
 
             if (nextTrigger > 0)
-                nextTrigger = Mathf.Clamp(nextTrigger.Value - (useFixedDeltaTime ? Time.fixedDeltaTime : Time.deltaTime), 0, duration.Value);
+                nextTrigger = Mathf.Clamp(nextTrigger.Value - (useFixedDeltaTime ? Time.fixedDeltaTime : Time.deltaTime), 0, duration);
 
             if (nextTrigger > 0)
             {
@@ -88,7 +83,8 @@ namespace Common
             {
                 ResetAuto();
                 time = nextTrigger.Value;
-                hasStarted = false;
+                if (StartAutomatically || mode == Mode.Manual)
+                    hasStarted = false;
                 isTriggered = true;
                 return;
             }
@@ -104,8 +100,12 @@ namespace Common
         }
 
         /// <summary>Resets this cooldown.</summary>
-        public void Reset() =>
-            nextTrigger = duration ?? 1f;
+        public void Reset()
+        {
+            Start();
+            hasStarted = true;
+            nextTrigger = duration;
+        }
 
     }
 

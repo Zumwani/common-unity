@@ -64,19 +64,19 @@ namespace Common
 
         static readonly Dictionary<string, Coroutine> coroutines = new Dictionary<string, Coroutine>();
         /// <summary>Starts this coroutine. This method can only start a single instance of this coroutine.</summary>
-        public static void Start(this IEnumerator coroutine)
+        public static void Start(this IEnumerator coroutine, Action onComplete = null)
         {
             if (coroutine == null)
                 return;
             if (!coroutines.ContainsKey(coroutine.ToString()))
-                coroutines.Add(coroutine.ToString(), StartCoroutine(coroutine));
+                coroutines.Add(coroutine.ToString(), StartCoroutine(coroutine, onComplete));
         }
 
         /// <summary>Restarts this coroutine.</summary>
-        public static void Restart(this IEnumerator coroutine)
+        public static void Restart(this IEnumerator coroutine, Action onComplete = null)
         {
             coroutine.Stop();
-            coroutine.Start();
+            coroutine.Start(onComplete);
         }
 
         /// <summary>Stops this coroutine.</summary>

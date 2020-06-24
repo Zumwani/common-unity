@@ -8,7 +8,6 @@ using System.Reflection;
 
 #if UNITY_EDITOR
 using UnityEditor;
-using UnityEditor.MemoryProfiler;
 using UnityEngine;
 
 namespace Common
@@ -29,7 +28,6 @@ namespace Common
             }
 
             CreateMenuItems();
-            AssetDatabase.Refresh();
 
         }
 
@@ -86,6 +84,9 @@ namespace Common
                 writer.WriteLine("#endif");
 
             }
+
+            if (!AssetDatabase.LoadAssetAtPath<MonoScript>(path))
+                AssetDatabase.Refresh();
 
         }
 
